@@ -2,14 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <stdbool.h>
 #include "md5.h"
-
-#ifndef bool
-typedef enum {
-	false,
-	true
-} bool;
-#endif
 
 int main(int argc, char *argv[]) {
 	int i, n;
