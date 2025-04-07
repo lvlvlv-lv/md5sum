@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		for(n=1; n<argc; n++) {
 			MD5Init(&md5);
-			MD5Update(&md5, argv[n], strlen(argv[n]));
+			MD5Update(&md5, (unsigned char *)argv[n], strlen(argv[n]));
 			MD5Final(&md5, decrypt);
 
 			for(i=0; i<16; i++) {
