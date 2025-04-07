@@ -17,13 +17,53 @@ bool IsFile(const char *fileOrStr)
   return S_ISREG(fileStat.st_mode);
 }
 
+int ProcFileMd5(const char *filePath)
+{
+  MD5_CTX md5;
+  unsigned char decrypt[16];
+  FILE *fp;
+  fp = fopen(filePath, "rb");
+  if(fp == NULL) {
+    fprintf(stderr, "File %s not exists, errno = %d, error = %s\n", filePath, errno, strerror(errno));
+    return 1;
+  }
+			
+  MD5Init(&md5);
+  do {
+    unsigned char encrypt[1024];
+    while(!feof(fp)) {
+      MD5Update(&md5, encrypt, fread(encrypt, 1, sizeof(encrypt), fp));
+    }
+    fclose(fp);
+  } while(0);
+			
+  MD5Final(&md5, decrypt);
+
+  for(int j = 0; j < 16; j++) {
+    printf("%02x", decrypt[j]);
+  }
+			
+  printf("  %s\n", filePath);
+  return 0;
+}
+
+int ProcStringMd5(const char *str)
+{
+  MD5_CTX md5;
+  unsigned char decrypt[16];
+  MD5Init(&md5);
+  MD5Update(&md5, (unsigned char *)str, strlen(str));
+  MD5Final(&md5, decrypt);
+
+  for(int j=0; j < 16; j++) {
+    printf("%02x", decrypt[j]);
+  }
+			
+  printf("  %s\n", str);
+  return 0;
+}
 
 int main(int argc, char *argv[]) {
-	int i, n;
-	bool isfile = false;
-	unsigned char decrypt[16];
-	MD5_CTX md5;
-
     if (argc == 1) {
       fprintf(stderr, "Usage:\n    %s [file|string] ...\n", argv[0]);
       exit(1);
@@ -31,40 +71,9 @@ int main(int argc, char *argv[]) {
 
     for (int i = 1; i < argc; i++) {
       if(IsFile(argv[i])) {
-		FILE *fp;
-        fp = fopen(argv[i], "rb");
-        if(fp == NULL) {
-          fprintf(stderr, "File %s not exists, errno = %d, error = %s\n", argv[i], errno, strerror(errno));
-          continue;
-        }
-			
-        MD5Init(&md5);
-        do {
-          unsigned char encrypt[1024];
-          while(!feof(fp)) {
-            MD5Update(&md5, encrypt, fread(encrypt, 1, sizeof(encrypt), fp));
-          }
-          fclose(fp);
-        } while(0);
-			
-        MD5Final(&md5, decrypt);
-
-        for(int j = 0; j < 16; j++) {
-          printf("%02x", decrypt[j]);
-        }
-			
-        printf("  %s\n", argv[i]);
+        ProcFileMd5(argv[i]);
       } else {
-        MD5Init(&md5);
-        MD5Update(&md5, (unsigned char *)argv[i], strlen(argv[i]));
-        MD5Final(&md5, decrypt);
-
-        for(int j=0; j < 16; j++) {
-          printf("%02x", decrypt[j]);
-        }
-			
-        printf("  %s\n", argv[i]);
-
+        ProcStringMd5(argv[i]);
       }
 
     }
